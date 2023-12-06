@@ -23,13 +23,13 @@ const storeAPI: StateCreator<PersonState & Actions, [["zustand/devtools", never]
 
 
 export const PersonStore = create<PersonState & Actions>()(
-    devtools(
-        persist(
-            storeAPI
-            , {
-                name: 'person-storage',
-                storage: firebaseStorage
-            }
-        )
+    // devtools(
+    persist(
+        storeAPI
+        , {
+            name: 'person-storage',
+            storage: firebaseStorage
+        }
     )
+    // )
 )

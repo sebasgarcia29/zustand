@@ -20,7 +20,6 @@ export const storageAPI: StateStorage = {
             method: 'PUT',
             body: value
         }).then(res => res.json())
-        console.count('setItem')
         return;
     },
     removeItem: function (name: string): void | Promise<void> {
