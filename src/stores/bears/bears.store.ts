@@ -13,6 +13,8 @@ interface BearsState {
     polarBears: number;
     pandaBears: number;
 
+    totalBears: () => number;
+
     increaseBlackBears: (by: number) => void;
     increasePolarBears: (by: number) => void;
     increasePandaBears: (by: number) => void;
@@ -21,7 +23,6 @@ interface BearsState {
     addBear: () => void;
     clearBears: () => void;
 
-    totalBears: () => number;
 }
 
 export const useBearStore = create<BearsState>()(
