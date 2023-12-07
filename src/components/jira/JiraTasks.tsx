@@ -1,13 +1,11 @@
-import { DragEvent, useState } from 'react';
 import {
   IoAddOutline,
   IoCheckmarkCircleOutline,
 } from 'react-icons/io5';
 import { Task, TaskStatus } from '../../interfaces';
 import { SingleTask } from './SingleTask';
-import { useTaskStore } from '../../stores';
 import classNames from 'classnames'
-import Swal from 'sweetalert2'
+import { useTasks } from '../../hooks/useTasks';
 
 interface Props {
   title: string;
@@ -18,52 +16,14 @@ interface Props {
 
 export const JiraTasks = ({ title, tasks, status }: Props) => {
 
-  const [onDragOver, setOnDragOver] = useState(false)
-
-  const isDragging = useTaskStore((state) => !!state.draggingTaskId);
-  const onTaskDrop = useTaskStore((state) => state.onTaskDrop);
-  const addTask = useTaskStore((state) => state.addTask);
-
-  const handleAddTask = async () => {
-
-    const { isConfirmed } = await Swal.fire({
-      title: 'Add Task',
-      input: 'text',
-      inputLabel: 'Task Name',
-      showCancelButton: true,
-      confirmButtonText: 'Add',
-      showLoaderOnConfirm: true,
-      allowOutsideClick: () => !Swal.isLoading(),
-      inputValidator: (value) => {
-        if (!value) return 'Task Name is required!'
-      },
-      preConfirm: (taskName) => {
-        return addTask(taskName, status);
-      },
-    })
-    if (isConfirmed) {
-      Swal.fire({
-        title: 'Task Added',
-        icon: 'success',
-        timer: 1000,
-        showConfirmButton: false,
-      })
-    }
-  }
-
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setOnDragOver(true);
-  }
-  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setOnDragOver(false);
-  }
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setOnDragOver(false);
-    onTaskDrop(status)
-  }
+  const {
+    isDragging,
+    onDragOver,
+    handleAddTask,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop
+  } = useTasks({ status })
 
   return (
     <div
