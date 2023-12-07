@@ -5,7 +5,10 @@
 import { type StateCreator } from "zustand";
 import { Task, TaskStatus } from "../../interfaces";
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
+import { v4 as uuidV4 } from "uuid";
+import { devtools, persist } from "zustand/middleware";
+// import { produce } from "immer";
+import { immer } from "zustand/middleware/immer";
 
 interface TaskState {
     // tasks: {[key: string]: Task}
@@ -15,9 +18,11 @@ interface TaskState {
     setDraggingTaskId: (taskId: string) => void
     removeDraggingTaskId: () => void
     changeTaskStatus: (taskId: string, status: TaskStatus) => void
+    onTaskDrop: (status: TaskStatus) => void
+    addTask: (title: string, status: TaskStatus) => void
 }
 
-const storeApi: StateCreator<TaskState> = (set, get) => ({
+const storeApi: StateCreator<TaskState, [["zustand/immer", never]]> = (set, get) => ({
     draggingTaskId: undefined,
     tasks: {
         'ABC-1': { id: 'ABC-1', title: 'Task 1', status: 'OPEN' },
@@ -32,15 +37,55 @@ const storeApi: StateCreator<TaskState> = (set, get) => ({
 
     setDraggingTaskId: (taskId: string) => set({ draggingTaskId: taskId }),
     removeDraggingTaskId: () => set({ draggingTaskId: undefined }),
+    //? without immer
+    // changeTaskStatus: (taskId: string, status: TaskStatus) => {
+    //     const tasks = get().tasks;
+    //     const task = tasks[taskId];
+    //     task.status = status;
+    //     set({ tasks: { ...tasks } });
+    // },
+    //? with immer
     changeTaskStatus: (taskId: string, status: TaskStatus) => {
-        const tasks = get().tasks;
-        const task = tasks[taskId];
-        task.status = status;
-        set({ tasks: { ...tasks } });
+        set(state => {
+            state.tasks[taskId].status = status;
+        })
+
+    },
+    onTaskDrop: (status: TaskStatus) => {
+        const taskId = get().draggingTaskId;
+        if (!taskId) return
+        get().changeTaskStatus(taskId, status);
+        get().removeDraggingTaskId();
+    },
+    //? This not require nothing but the state its mutated
+    // addTask: (title: string, status: TaskStatus) => {
+    //     set((state) => {
+    //         const taskId = `ABC-${uuidV4()}`;
+    //         const task: Task = { id: taskId, title, status };
+    //         return { tasks: { ...state.tasks, [taskId]: task } }
+    //     });
+    // },
+    //? This require immer
+    // addTask: (title: string, status: TaskStatus) => {
+    //     const newTask: Task = { id: `ABC-${uuidV4()}`, title, status };
+    //     set(produce((state: TaskState) => {
+    //         state.tasks[newTask.id] = task
+    //     }))
+    // }
+    //? With the middleware immer
+    addTask: (title: string, status: TaskStatus) => {
+        const newTask: Task = { id: `ABC-${uuidV4()}`, title, status };
+        set(state => {
+            state.tasks[newTask.id] = newTask
+        })
     }
 });
 
 
 export const useTaskStore = create<TaskState>()(
-    devtools(storeApi)
+    devtools(
+        persist(
+            immer(storeApi), { name: 'task-store' }
+        )
+    )
 );

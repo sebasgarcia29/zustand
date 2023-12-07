@@ -1,27 +1,55 @@
 import { DragEvent, useState } from 'react';
 import {
+  IoAddOutline,
   IoCheckmarkCircleOutline,
-  IoEllipsisHorizontalOutline
 } from 'react-icons/io5';
 import { Task, TaskStatus } from '../../interfaces';
 import { SingleTask } from './SingleTask';
 import { useTaskStore } from '../../stores';
 import classNames from 'classnames'
+import Swal from 'sweetalert2'
 
 interface Props {
   title: string;
   tasks: Task[];
-  value: TaskStatus;
+  status: TaskStatus;
 }
 
 
-export const JiraTasks = ({ title, tasks, value }: Props) => {
+export const JiraTasks = ({ title, tasks, status }: Props) => {
 
   const [onDragOver, setOnDragOver] = useState(false)
 
   const isDragging = useTaskStore((state) => !!state.draggingTaskId);
-  const changeTaskStatus = useTaskStore((state) => state.changeTaskStatus);
-  const draggingTaskId = useTaskStore((state) => state.draggingTaskId);
+  const onTaskDrop = useTaskStore((state) => state.onTaskDrop);
+  const addTask = useTaskStore((state) => state.addTask);
+
+  const handleAddTask = async () => {
+
+    const { isConfirmed } = await Swal.fire({
+      title: 'Add Task',
+      input: 'text',
+      inputLabel: 'Task Name',
+      showCancelButton: true,
+      confirmButtonText: 'Add',
+      showLoaderOnConfirm: true,
+      allowOutsideClick: () => !Swal.isLoading(),
+      inputValidator: (value) => {
+        if (!value) return 'Task Name is required!'
+      },
+      preConfirm: (taskName) => {
+        return addTask(taskName, status);
+      },
+    })
+    if (isConfirmed) {
+      Swal.fire({
+        title: 'Task Added',
+        icon: 'success',
+        timer: 1000,
+        showConfirmButton: false,
+      })
+    }
+  }
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -34,11 +62,8 @@ export const JiraTasks = ({ title, tasks, value }: Props) => {
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setOnDragOver(false);
-    changeTaskStatus(draggingTaskId!, value)
+    onTaskDrop(status)
   }
-
-
-
 
   return (
     <div
@@ -66,8 +91,8 @@ export const JiraTasks = ({ title, tasks, value }: Props) => {
           <h4 className="ml-4 text-xl font-bold text-navy-700">{title}</h4>
         </div>
 
-        <button>
-          <IoEllipsisHorizontalOutline />
+        <button onClick={handleAddTask}>
+          <IoAddOutline />
         </button>
 
       </div>
