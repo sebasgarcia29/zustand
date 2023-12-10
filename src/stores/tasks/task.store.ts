@@ -22,7 +22,7 @@ interface TaskState {
     addTask: (title: string, status: TaskStatus) => void
 }
 
-const storeApi: StateCreator<TaskState, [["zustand/immer", never]]> = (set, get) => ({
+const storeApi: StateCreator<TaskState, [["zustand/devtools", never], ["zustand/persist", unknown], ["zustand/immer", never]], []> = (set, get) => ({
     draggingTaskId: undefined,
     tasks: {
         'ABC-1': { id: 'ABC-1', title: 'Task 1', status: 'OPEN' },
@@ -35,8 +35,8 @@ const storeApi: StateCreator<TaskState, [["zustand/immer", never]]> = (set, get)
         return Object.values(tasks).filter(task => task.status === status);
     },
 
-    setDraggingTaskId: (taskId: string) => set({ draggingTaskId: taskId }),
-    removeDraggingTaskId: () => set({ draggingTaskId: undefined }),
+    setDraggingTaskId: (taskId: string) => set({ draggingTaskId: taskId }, false, 'setDraggingTaskId'),
+    removeDraggingTaskId: () => set({ draggingTaskId: undefined }, false, 'removeDraggingTaskId'),
     //? without immer
     // changeTaskStatus: (taskId: string, status: TaskStatus) => {
     //     const tasks = get().tasks;
@@ -48,7 +48,7 @@ const storeApi: StateCreator<TaskState, [["zustand/immer", never]]> = (set, get)
     changeTaskStatus: (taskId: string, status: TaskStatus) => {
         set(state => {
             state.tasks[taskId].status = status;
-        })
+        }, false, 'changeTaskStatus')
 
     },
     onTaskDrop: (status: TaskStatus) => {
@@ -77,15 +77,15 @@ const storeApi: StateCreator<TaskState, [["zustand/immer", never]]> = (set, get)
         const newTask: Task = { id: `ABC-${uuidV4()}`, title, status };
         set(state => {
             state.tasks[newTask.id] = newTask
-        })
+        }, false, 'addTask')
     }
 });
 
 
 export const useTaskStore = create<TaskState>()(
-    devtools(
-        persist(
-            immer(storeApi), { name: 'task-store' }
-        )
+    // devtools(
+    persist(
+        immer(storeApi), { name: 'task-store' }
     )
+    // )
 );
