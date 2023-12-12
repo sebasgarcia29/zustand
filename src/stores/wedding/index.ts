@@ -9,7 +9,6 @@ import { ConfirmationInterface, createConfirmationSlice } from "./confirmation.s
 type ShareState = PersonSlice & GuestInterface & DateInterface & ConfirmationInterface
 
 export const useWeddingBoundStore = create<ShareState>()(
-    // persist(
     devtools(
         (...a) => ({
             ...createPersonSlice(...a),
@@ -18,8 +17,5 @@ export const useWeddingBoundStore = create<ShareState>()(
             ...createConfirmationSlice(...a),
         }),
     ),
-    //     {
-    //         name: 'wedding-store',
-    //     }
-    // ),
+
 );

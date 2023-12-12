@@ -1,15 +1,15 @@
 import { WhiteCard } from '../../components';
-import { PersonStore } from '../../stores';
+import { usePersonStore } from '../../stores';
 
 
 
 export const PersonPage = () => {
 
 
-  const firstName = PersonStore((state) => state.firstName)
-  const lastName = PersonStore((state) => state.lastName)
-  const setFirstName = PersonStore((state) => state.setFirstName)
-  const setLastName = PersonStore((state) => state.setLastName)
+  const firstName = usePersonStore((state) => state.firstName)
+  const lastName = usePersonStore((state) => state.lastName)
+  const setFirstName = usePersonStore((state) => state.setFirstName)
+  const setLastName = usePersonStore((state) => state.setLastName)
 
   return (
     <>

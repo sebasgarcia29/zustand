@@ -2,6 +2,7 @@ import { type StateCreator, create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 // import { customSessionStorage } from '../storages/session.storage'
 import { firebaseStorage } from '../storages/firebase.storage'
+import { useWeddingBoundStore } from '../wedding'
 
 interface PersonState {
     firstName: string
@@ -22,14 +23,22 @@ const storeAPI: StateCreator<PersonState & Actions, [["zustand/devtools", never]
 
 
 
-export const PersonStore = create<PersonState & Actions>()(
-    // devtools(
-    persist(
-        storeAPI
-        , {
-            name: 'person-storage',
-            storage: firebaseStorage
-        }
+export const usePersonStore = create<PersonState & Actions>()(
+    devtools(
+        persist(
+            storeAPI
+            , {
+                name: 'person-storage',
+                storage: firebaseStorage
+            }
+        )
     )
-    // )
 )
+
+usePersonStore.subscribe((nextState, prevState) => {
+
+    const { firstName, lastName } = nextState
+
+    useWeddingBoundStore.getState().setFirstName(firstName);
+    useWeddingBoundStore.getState().setLastName(lastName);
+});
